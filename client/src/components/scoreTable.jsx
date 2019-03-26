@@ -23,8 +23,11 @@ class ScoreTable extends Component {
   state = {};
   render() {
     return (
-      <div>
-        <button className="btn btn-primary mb-2" onClick={this.handleExportToExcel}>
+      <div className="ScoreTable">
+        <button
+          className="btn btn-primary mb-2"
+          onClick={this.handleExportToExcel}
+        >
           Export to excel
         </button>
         <h2>Scores</h2>
