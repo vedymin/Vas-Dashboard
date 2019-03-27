@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Route, Redirect, Switch } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 import ScoreTable from "./components/scoreTable";
 import NavBar from "./components/navBar";
 import Settings from "./components/settings";
@@ -12,6 +12,7 @@ class App extends Component {
         <Switch>
           <Route path="/scores" component={ScoreTable} />
           <Route path="/settings" component={Settings} />
+          <Route path="/" component={ScoreTable} />
           {/* <Route path="/movies/:_id" component={MovieForm} />
         <Route path="/movies" component={Movies} />
         <Route path="/customers" component={Customers} />
