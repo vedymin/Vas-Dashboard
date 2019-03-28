@@ -3,20 +3,28 @@ var mysql = require("mysql2");
 var json2xls = require("json2xls");
 
 const app = express();
-const db = mysql.createConnection({
-  // host: "10.55.137.48",
+// const db = mysql.createConnection({
+//   // host: "10.55.137.48",
+//   host: "127.0.0.1",
+//   user: "root",
+//   password: "admin",
+//   database: "vas_productivity_database"
+// });
+
+var pool = mysql.createPool({
+  connectionLimit: 10,
   host: "127.0.0.1",
   user: "root",
   password: "admin",
   database: "vas_productivity_database"
 });
 
-db.connect(err => {
-  if (err) {
-    throw err;
-  }
-  console.log("MySql Connected...");
-});
+// db.connect(err => {
+//   if (err) {
+//     throw err;
+//   }
+//   console.log("MySql Connected...");
+// });
 
 let scoreResults = {};
 
@@ -30,7 +38,7 @@ app.put("/settings/:id/:wage", (req, res) => {
   let sql = `UPDATE vas_productivity_database.vas SET Wage = ${
     req.params.wage
   } WHERE (VasID = ${req.params.id});`;
-  let query = db.query(sql, (err, results) => {
+  let query = pool.query(sql, (err, results) => {
     if (err) throw err;
     console.log(results);
     res.send("Updated!");
@@ -39,7 +47,7 @@ app.put("/settings/:id/:wage", (req, res) => {
 
 app.get("/hdscan", (req, res) => {
   let sql = "SELECT * FROM hd_scan";
-  let query = db.query(sql, (err, results) => {
+  let query = pool.query(sql, (err, results) => {
     if (err) throw err;
     console.log(results);
     res.json(results);
@@ -48,7 +56,7 @@ app.get("/hdscan", (req, res) => {
 
 app.get("/settings", (req, res) => {
   let sql = "SELECT * FROM vas";
-  let query = db.query(sql, (err, results) => {
+  let query = pool.query(sql, (err, results) => {
     if (err) throw err;
     console.log(results);
     res.json(results);
@@ -57,7 +65,7 @@ app.get("/settings", (req, res) => {
 
 app.get("/hd", (req, res) => {
   let sql = "SELECT * FROM hd";
-  let query = db.query(sql, (err, results) => {
+  let query = pool.query(sql, (err, results) => {
     if (err) throw err;
     console.log(results);
     res.json(results);
@@ -76,7 +84,7 @@ app.get("/score/:from/:to", (req, res) => {
     group by PackStationName, HdNumber, Quantity, OrderName ) as x
     GROUP BY PackStationName`;
   console.log(sql);
-  let query = db.query(sql, (err, results) => {
+  let query = pool.query(sql, (err, results) => {
     if (err) throw err;
     scoreResults = results;
     res.json(results);
