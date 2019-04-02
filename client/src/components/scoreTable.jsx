@@ -62,7 +62,13 @@ class ScoreTable extends Component {
     ).then(res => {
       console.log(res);
       let { data } = res;
-      data = _.orderBy(data, "Score", "desc");
+      data = _.orderBy(
+        data,
+        (data) => {
+          return parseInt(data.Score, 10);
+        },
+        "desc"
+      );
       this.setState({ scores: data });
     });
   }
