@@ -1,15 +1,9 @@
 const express = require("express");
 var mysql = require("mysql2");
 var json2xls = require("json2xls");
+var vasCalc = require("./vasCalculations");
 
 const app = express();
-// const db = mysql.createConnection({
-//   // host: "10.55.137.48",
-//   host: "127.0.0.1",
-//   user: "root",
-//   password: "admin",
-//   database: "vas_productivity_database"
-// });
 
 var pool = mysql.createPool({
   connectionLimit: 10,
@@ -18,13 +12,6 @@ var pool = mysql.createPool({
   password: "admin2",
   database: "vas_productivity_database"
 });
-
-// db.connect(err => {
-//   if (err) {
-//     throw err;
-//   }
-//   console.log("MySql Connected...");
-// });
 
 let scoreResults = {};
 
@@ -83,7 +70,6 @@ app.get("/score/:from/:to", (req, res) => {
     where ScanTimestamp between '${req.params.from}' and '${req.params.to}'
     group by PackStationName, HdNumber, Quantity, OrderName ) as x
     GROUP BY PackStationName`;
-  console.log(sql);
   let query = pool.query(sql, (err, results) => {
     if (err) throw err;
     scoreResults = results;
@@ -91,26 +77,30 @@ app.get("/score/:from/:to", (req, res) => {
   });
 });
 
-// var jsonArr = [
-//   {
-//     foo: "bar",
-//     qux: "moo",
-//     poo: 123,
-//     stux: new Date()
-//   },
-//   {
-//     foo: "bar",
-//     qux: "moo",
-//     poo: 345,
-//     stux: new Date()
-//   }
-// ];
+app.get("/all/:from/:to", (req, res) => {
+  let sql = `select distinct OrderName, HdNumber, Quantity, ScanTimestamp, Flag, FlagValue, PackStationName
+from hd_scan 
+inner join hd on hd.HdID = hd_scan.HdID
+inner join \`order\` on \`order\`.OrderID = hd.OrderID
+inner join vas_for_order on \`order\`.OrderID = vas_for_order.OrderID
+inner join vas on vas.VasID = vas_for_order.VasID
+inner join pack_station on pack_station.PackStationID = hd_scan.PackStationID
+    where ScanTimestamp between '${req.params.from}' and '${req.params.to}'`;
+  let query = pool.query(sql, (err, results) => {
+    if (err) throw err;
+    scoreResults = results;
+    res.json(results);
+  });
+});
 
-// app.use(json2xls.middleware);
-
-// app.get("/", function(req, res) {
-//   res.xls("data.xlsx", jsonArr);
-// });
+app.get("/avg/:number/:interval", (req, res) => {
+  const sql = vasCalc;
+  let query = pool.query(sql, (err, results) => {
+    if (err) throw err;
+    scoreResults = results;
+    res.json(results);
+  });
+});
 
 const port = 5000;
 

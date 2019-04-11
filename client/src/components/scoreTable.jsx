@@ -7,7 +7,6 @@ import _ from "lodash";
 import "react-datepicker/dist/react-datepicker.css";
 
 var fileDownload = require("js-file-download");
-var json2xls = require("json2xls");
 
 class ScoreTable extends Component {
   constructor(props) {
@@ -18,6 +17,7 @@ class ScoreTable extends Component {
     this.state.endDate.setMinutes(0);
     this.state.startDate.setHours(6, 0, 0);
     this.handleExportToExcel = this.handleExportToExcel.bind(this);
+    this.handleExportToExcelAll = this.handleExportToExcelAll.bind(this);
     this.handleStartDateChange = this.handleStartDateChange.bind(this);
     this.handleEndDateChange = this.handleEndDateChange.bind(this);
     this.DownloadScores = this.DownloadScores.bind(this);
@@ -29,9 +29,33 @@ class ScoreTable extends Component {
     var keys = (json[0] && Object.keys(json[0])) || [];
     csv += keys.join(";") + "\n";
     for (var line of json) {
-      csv += keys.map(key => line[key]).join(";") + "\n";
+      csv +=
+        keys
+          .map(key => {
+            if (key === "ScanTimestamp") {
+              line[key] = line[key].slice(0, 19).replace(/-/g, "/").replace("T", " ")
+            }
+            return line[key];
+          })
+          .join(";") + "\n";
     }
     return csv;
+  }
+
+  handleExportToExcelAll() {
+    Axios.get(
+      `/all/${dateFormat(
+        this.state.startDate,
+        "yyyy-mm-dd HH:MM"
+      )}/${dateFormat(this.state.endDate, "yyyy-mm-dd HH:MM")}`
+    ).then(res => {
+      console.log(res);
+      let { data } = res;
+
+      data = this.toCSV(data);
+      console.log(data);
+      fileDownload(data, "data.csv");
+    });
   }
 
   handleExportToExcel() {
@@ -64,7 +88,7 @@ class ScoreTable extends Component {
       let { data } = res;
       data = _.orderBy(
         data,
-        (data) => {
+        data => {
           return parseInt(data.Score, 10);
         },
         "desc"
@@ -86,6 +110,12 @@ class ScoreTable extends Component {
           onClick={this.handleExportToExcel}
         >
           Export to excel
+        </button>
+        <button
+          className="btn btn-primary mb-2 ml-2"
+          onClick={this.handleExportToExcelAll}
+        >
+          Export with details
         </button>
         <h2>Scores</h2>
 
