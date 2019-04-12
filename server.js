@@ -78,7 +78,7 @@ app.get("/score/:from/:to", (req, res) => {
 });
 
 app.get("/all/:from/:to", (req, res) => {
-  let sql = `select distinct OrderName, HdNumber, Quantity, ScanTimestamp, Flag, FlagValue, PackStationName
+  let sql = `select distinct OrderName, HdNumber, Quantity, ScanTimestamp, Flag, FlagValue, Description, PackStationName
 from hd_scan 
 inner join hd on hd.HdID = hd_scan.HdID
 inner join \`order\` on \`order\`.OrderID = hd.OrderID
